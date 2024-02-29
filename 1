@@ -1,1 +1,35 @@
-test
+# Detect the operating system
+OS := $(shell uname -s)
+
+# Define the source and target directories
+OVERRIDES_DIR := _overrides
+TARGET_DIR := terraform_module
+
+# Define the override files
+PREPROD_OVERRIDE := preprod.override.tf
+PROD_OVERRIDE := prod.override.tf
+
+# Platform-specific commands
+ifeq ($(OS),Darwin)
+  CP := cp
+  RM := rm -f
+else ifeq ($(OS),Linux)
+  CP := cp
+  RM := rm -f
+else
+  CP := copy
+  RM := del
+endif
+
+# Targets
+override_clean:
+	@echo "Cleaning up override files..."
+	@find . -type f -name '*.override.tf' ! -path "./$(OVERRIDES_DIR)/*" -exec $(RM) {} +
+
+override_pre: override_clean
+	@echo "Copying preprod override file..."
+	@$(CP) $(OVERRIDES_DIR)/$(PREPROD_OVERRIDE) $(TARGET_DIR)/
+
+override_prod: override_clean
+	@echo "Copying prod override file..."
+	@$(CP) $(OVERRIDES_DIR)/$(PROD_OVERRIDE) $(TARGET_DIR)/
